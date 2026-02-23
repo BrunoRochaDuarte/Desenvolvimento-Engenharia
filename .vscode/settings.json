@@ -1,0 +1,10 @@
+{
+    "editor.cursorBlinking": "blink",
+    "editor.cursorStyle": "line",
+    "editor.cursorSurroundingLinesStyle": "all",
+    "editor.cursorHeight": 100,
+    "editor.cursorWidth": 5,
+    "editor.find.addExtraSpaceOnTop": false,
+    "editor.find.cursorMoveOnType": false,
+    "liveServer.settings.port": 5501
+}
