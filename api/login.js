@@ -1,12 +1,9 @@
-export default function handler(req, res) {
-  // Só aceita POST
+module.exports = function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, message: 'Método não permitido' });
   }
 
   const { senha } = req.body;
-
-  // Senha vem da variável de ambiente — nunca fica exposta no código
   const senhaCorreta = process.env.SENHA_ACESSO;
 
   if (!senhaCorreta) {
