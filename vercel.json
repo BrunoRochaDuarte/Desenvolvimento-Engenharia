@@ -2,10 +2,6 @@
   "version": 2,
   "builds": [
     {
-      "src": "*.html",
-      "use": "@vercel/static"
-    },
-    {
       "src": "api/login.js",
       "use": "@vercel/node"
     }
@@ -16,12 +12,8 @@
       "dest": "/api/login.js"
     },
     {
-      "src": "/dashboard.html",
-      "dest": "/dashboard.html"
-    },
-    {
-      "src": "/",
-      "dest": "/index.html"
+      "src": "/(.*)",
+      "dest": "/$1"
     }
   ]
 }
