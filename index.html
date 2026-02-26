@@ -377,6 +377,7 @@
         const data = await res.json();
 
         if (data.ok) {
+          sessionStorage.setItem('auth_token', data.token);
           btn.textContent = '✓ Acesso liberado!';
           setTimeout(() => {
             window.location.href = '/dashboard.html';

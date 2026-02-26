@@ -1,5 +1,6 @@
+const crypto = require('crypto');
+
 exports.handler = async function(event, context) {
-  // Só aceita POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -18,9 +19,11 @@ exports.handler = async function(event, context) {
   }
 
   if (senha === senhaCorreta) {
+    const hoje = new Date().toISOString().split('T')[0];
+    const token = crypto.createHash('sha256').update(senhaCorreta + hoje).digest('hex');
     return {
       statusCode: 200,
-      body: JSON.stringify({ ok: true })
+      body: JSON.stringify({ ok: true, token })
     };
   } else {
     return {
