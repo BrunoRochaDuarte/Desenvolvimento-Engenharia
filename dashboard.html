@@ -234,7 +234,7 @@
               <div class="card-header">
                 <div class="card-title">
                   <div class="card-title-dot" style="background:#34d399;box-shadow:0 0 8px #10b981"></div>
-                  Top Desenvolvedores
+                   Desenvolvedores
                 </div>
               </div>
               <div class="card-body" style="padding:14px"><div class="dev-list" id="dev-list"></div></div>
@@ -248,16 +248,20 @@
               </div>
               <div class="card-body"><div class="status-grid" id="status-grid"></div></div>
             </div>
-            <div class="card">
-              <div class="card-header">
-                <div class="card-title"><div class="card-title-dot"></div>Projetos por Período</div>
-              </div>
-              <div class="card-body" style="padding:16px">
-                <div class="timeline-chart">
-                  <div class="timeline-bars" id="timeline-bars"></div>
-                </div>
-              </div>
-            </div>
+          <div class="card">
+  <div class="card-header">
+    <div class="card-title">
+      <div class="card-title-dot" style="background:#6182dd;box-shadow:0 0 8px #224ec5"></div>
+      Projetos por Desenvolvedor
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="donut-wrap">
+      <svg class="donut-svg" width="130" height="130" viewBox="0 0 130 130" id="dev-donut-svg"></svg>
+      <div class="donut-legend" id="dev-donut-legend"></div>
+    </div>
+  </div>
+</div>
           </div>
         </div>
         <div class="view" id="view-catalog">
@@ -330,6 +334,17 @@
         return (name || '?').split(' ').filter(Boolean).slice(0, 3).map(w => w[0]).join('').toUpperCase();
       }
       const PALETTE = ['#ef4444','#f97316','#eab308','#22c55e','#06b6d4','#3b82f6','#a855f7','#ec4899'];
+      const DEV_COLORS = {
+  'Matheus H. Tinti': '#86efac',   // verde pastel
+  'Bruno R. Duarte':  '#fca5a5',   // vermelho pastel
+  'Carlos H. Damaceno': '#93c5fd', // azul pastel
+};
+const PASTEL_EXTRA = ['#f9a8d4','#fdba74','#fde68a','#c4b5fd','#67e8f9','#a7f3d0'];
+function devColor(name, index) {
+  if (DEV_COLORS[name]) return DEV_COLORS[name];
+  return PASTEL_EXTRA[index % PASTEL_EXTRA.length];
+}
+
 
       // ── ANALYTICS ─────────────────────────────────────────
       function buildAnalytics(data) {
@@ -427,14 +442,30 @@ nomes.forEach(name => {
           <div class="status-block"><div class="status-num amber">${A.waiting}</div><div class="status-lbl">Em Andamento</div></div>
           <div class="status-block"><div class="status-num red">${A.cancelled}</div><div class="status-lbl">Cancelados</div></div>
           <div class="status-block"><div class="status-num">${((A.concluded / Math.max(A.concluded + A.cancelled, 1)) * 100).toFixed(0)}%</div><div class="status-lbl">Taxa de Conclusão</div></div>`;
-        const maxTL = Math.max(...A.timeline.map(([,v])=>v), 1);
-        const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-        document.getElementById('timeline-bars').innerHTML = A.timeline.map(([key,count]) => {
-          const [y,m] = key.split('-');
-          const label = monthNames[+m-1]+' '+y.slice(2);
-          const pct = Math.round((count/maxTL)*80);
-          return `<div class="tbar-col"><div class="tbar-val-top">${count}</div><div class="tbar-fill" style="height:${pct}px" data-val="${count} projeto${count!==1?'s':''}"></div><div class="tbar-label">${label}</div></div>`;
-        }).join('');
+      const devTotal = A.devs.reduce((s,[,{count}]) => s + count, 0);
+const top6devs = A.devs.slice(0, 6);
+const othersDevCount = A.devs.slice(6).reduce((s,[,{count}]) => s + count, 0);
+const devSlices = othersDevCount > 0 ? [...top6devs, ['Outros', {count: othersDevCount}]] : top6devs;
+let devAngle = -90;
+const cx2=65, cy2=65, r2=50, ri2=34;
+const devPaths = devSlices.map(([name,{count}], i) => {
+  const angle = (count/devTotal)*360;
+  const startRad = devAngle*(Math.PI/180);
+  const endRad = (devAngle+angle)*(Math.PI/180);
+  devAngle += angle;
+  const x1=cx2+r2*Math.cos(startRad), y1=cy2+r2*Math.sin(startRad);
+  const x2=cx2+r2*Math.cos(endRad), y2=cy2+r2*Math.sin(endRad);
+  const ix1=cx2+ri2*Math.cos(startRad), iy1=cy2+ri2*Math.sin(startRad);
+  const ix2=cx2+ri2*Math.cos(endRad), iy2=cy2+ri2*Math.sin(endRad);
+  const large = angle>180?1:0;
+  const color = name==='Outros' ? '#e2e8f0' : devColor(name, i);
+  return `<path d="M${x1},${y1} A${r2},${r2} 0 ${large},1 ${x2},${y2} L${ix2},${iy2} A${ri2},${ri2} 0 ${large},0 ${ix1},${iy1} Z" fill="${color}" stroke="#070f20" stroke-width="2" opacity="0.9"/>`;
+}).join('');
+document.getElementById('dev-donut-svg').innerHTML = `${devPaths}<text x="65" y="61" text-anchor="middle" fill="#c8d8f0" font-size="18" font-weight="800" font-family="Outfit,sans-serif">${devTotal}</text><text x="65" y="74" text-anchor="middle" fill="#6b8ab5" font-size="7" font-family="DM Mono,monospace" letter-spacing="1">PROJETOS</text>`;
+document.getElementById('dev-donut-legend').innerHTML = devSlices.map(([name,{count}],i) => {
+  const color = name==='Outros' ? '#e2e8f0' : devColor(name, i);
+  return `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div><div class="legend-label">${name}</div><div class="legend-val">${count} proj</div></div>`;
+}).join('');
       }
 
       // ── RENDER CATALOG ────────────────────────────────────
