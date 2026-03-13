@@ -333,7 +333,7 @@
 
       // ── ANALYTICS ─────────────────────────────────────────
       function buildAnalytics(data) {
-        const totalEcon = data.reduce((s, d) => s + Number(d.Economia || 0), 0);
+        const totalEcon = data.reduce((s, d) => s + Number(d.Economia || 0) * Math.max(Number(d.Quantidade || 1), 1), 0);
         const totalProj = data.length;
         const concluded = data.filter(d => (d.Status || '').toLowerCase().includes('conclu')).length;
         const cancelled = data.filter(d => (d.Status || '').toLowerCase().includes('cancel')).length;
@@ -342,7 +342,8 @@
         data.forEach(d => {
           const resp = d['Responsável pelo Desenvolvimento'] || '';
           const nomes = resp.split(/;|,/).map(s => s.trim()).filter(Boolean);
-const econPorDev = Number(d.Economia || 0) / Math.max(nomes.length, 1);
+const quantidade = Math.max(Number(d.Quantidade || 1), 1);
+const econPorDev = (Number(d.Economia || 0) * quantidade) / Math.max(nomes.length, 1);
 nomes.forEach(name => {
   if (!devMap[name]) devMap[name] = { econ: 0, count: 0 };
   devMap[name].econ += econPorDev;
@@ -355,7 +356,7 @@ nomes.forEach(name => {
         data.forEach(d => {
           const c = (d.Categoria || 'Outros').trim();
           if (!catMap[c]) catMap[c] = 0;
-          catMap[c] += Number(d.Economia || 0);
+          catMap[c] += Number(d.Economia || 0) * Math.max(Number(d.Quantidade || 1), 1);
         });
         const cats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
         const catCountMap = {};
