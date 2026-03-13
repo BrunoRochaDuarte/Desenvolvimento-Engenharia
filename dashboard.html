@@ -281,7 +281,7 @@
     </div>
     <script>
       // ── TOKEN ─────────────────────────────────────────────
-      const AUTH_TOKEN = sessionStorage.getItem('auth_token');
+       const AUTH_TOKEN = sessionStorage.getItem('auth_token');
       if (!AUTH_TOKEN) {
         window.location.href = '/';
       }
@@ -341,11 +341,13 @@
         const devMap = {};
         data.forEach(d => {
           const resp = d['Responsável pelo Desenvolvimento'] || '';
-          resp.split(/;|,/).map(s => s.trim()).filter(Boolean).forEach(name => {
-            if (!devMap[name]) devMap[name] = { econ: 0, count: 0 };
-            devMap[name].econ += Number(d.Economia || 0);
-            devMap[name].count++;
-          });
+          const nomes = resp.split(/;|,/).map(s => s.trim()).filter(Boolean);
+const econPorDev = Number(d.Economia || 0) / Math.max(nomes.length, 1);
+nomes.forEach(name => {
+  if (!devMap[name]) devMap[name] = { econ: 0, count: 0 };
+  devMap[name].econ += econPorDev;
+  devMap[name].count++;
+});
         });
         const devs = Object.entries(devMap).sort((a, b) => b[1].econ - a[1].econ);
         const totalDevs = devs.length;
@@ -407,13 +409,18 @@
         document.getElementById('donut-svg').innerHTML = `${paths}<text x="65" y="61" text-anchor="middle" fill="#c8d8f0" font-size="18" font-weight="800" font-family="Outfit,sans-serif">${total}</text><text x="65" y="74" text-anchor="middle" fill="#6b8ab5" font-size="7" font-family="DM Mono,monospace" letter-spacing="1">PROJETOS</text>`;
         document.getElementById('donut-legend').innerHTML = slices.map(([cat,count],i) => `
           <div class="legend-item"><div class="legend-dot" style="background:${PALETTE[i%PALETTE.length]}"></div><div class="legend-label">${cat}</div><div class="legend-val">${((count/total)*100).toFixed(1)}%</div></div>`).join('');
-        document.getElementById('dev-list').innerHTML = A.devs.slice(0,5).map(([name,{econ,count}],i) => `
-          <div class="dev-row" style="${i < 3 ? 'border-color:rgba(251,191,36,0.3);background:rgba(251,191,36,0.05);' : 'opacity:0.6;'}">
-            <div class="dev-rank" style="${i < 3 ? 'color:#fbbf24;font-weight:700;' : 'color:var(--text-muted);'}">${i===0?'1º':i===1?'2º':i===2?'3º':i+1+'º'}</div>
-            <div class="dev-avatar ${i===0?'':i===1?'g2':'g3'}">${initials(name)}</div>
-            <div class="dev-info"><div class="dev-name" style="${i < 3 ? 'font-size:1rem;color:#ffffff;font-weight:700;' : 'font-size:0.75rem;color:var(--text-dim);'}">${name}</div><div class="dev-projects">${count} projeto${count!==1?'s':''}</div></div>
-            <div><div class="dev-econ">${fmtShort(econ)}</div><div class="dev-econ-label">economia</div></div>
-          </div>`).join('');
+        document.getElementById('dev-list').innerHTML = A.devs.slice(0,5).map(([name,{econ}],i) => `
+  <div class="dev-row">
+    <div class="dev-rank" style="color:var(--text-dim);">${i+1}º</div>
+    <div class="dev-avatar">${initials(name)}</div>
+    <div class="dev-info">
+      <div class="dev-name" style="font-size:0.85rem;color:var(--white);font-weight:600;">${name}</div>
+    </div>
+    <div>
+      <div class="dev-econ">${fmtShort(econ)}</div>
+      <div class="dev-econ-label">economia</div>
+    </div>
+  </div>`).join('');
         document.getElementById('status-grid').innerHTML = `
           <div class="status-block"><div class="status-num green">${A.concluded}</div><div class="status-lbl">Concluídos</div></div>
           <div class="status-block"><div class="status-num amber">${A.waiting}</div><div class="status-lbl">Em Andamento</div></div>
@@ -564,8 +571,8 @@
         try {
           // Busca dados via função Netlify — API Key nunca fica exposta no frontend
           const res = await fetch('/.netlify/functions/dados', {
-            headers: { 'x-auth-token': AUTH_TOKEN }
-          });
+  headers: { 'x-auth-token': AUTH_TOKEN }
+});
           if (!res.ok) throw new Error('HTTP ' + res.status);
           let data = await res.json();
           if (!Array.isArray(data)) {
