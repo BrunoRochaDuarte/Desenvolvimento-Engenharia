@@ -437,12 +437,8 @@ nomes.forEach(name => {
       <div class="dev-econ-label">economia</div>
     </div>
   </div>`).join('');
-        document.getElementById('status-grid').innerHTML = `
-          <div class="status-block"><div class="status-num green">${A.concluded}</div><div class="status-lbl">Concluídos</div></div>
-          <div class="status-block"><div class="status-num amber">${A.waiting}</div><div class="status-lbl">Em Andamento</div></div>
-          <div class="status-block"><div class="status-num red">${A.cancelled}</div><div class="status-lbl">Cancelados</div></div>
-          <div class="status-block"><div class="status-num">${((A.concluded / Math.max(A.concluded + A.cancelled, 1)) * 100).toFixed(0)}%</div><div class="status-lbl">Taxa de Conclusão</div></div>`;
-      const devTotal = A.devs.reduce((s,[,{count}]) => s + count, 0);
+
+    const devTotal = A.devs.reduce((s,[,{count}]) => s + count, 0);
 const top6devs = A.devs.slice(0, 6);
 const othersDevCount = A.devs.slice(6).reduce((s,[,{count}]) => s + count, 0);
 const devSlices = othersDevCount > 0 ? [...top6devs, ['Outros', {count: othersDevCount}]] : top6devs;
@@ -466,6 +462,13 @@ document.getElementById('dev-donut-legend').innerHTML = devSlices.map(([name,{co
   const color = name==='Outros' ? '#e2e8f0' : devColor(name, i);
   return `<div class="legend-item"><div class="legend-dot" style="background:${color}"></div><div class="legend-label">${name}</div><div class="legend-val">${count} proj</div></div>`;
 }).join('');
+
+        document.getElementById('status-grid').innerHTML = `
+          <div class="status-block"><div class="status-num green">${A.concluded}</div><div class="status-lbl">Concluídos</div></div>
+          <div class="status-block"><div class="status-num amber">${A.waiting}</div><div class="status-lbl">Em Andamento</div></div>
+          <div class="status-block"><div class="status-num red">${A.cancelled}</div><div class="status-lbl">Cancelados</div></div>
+          <div class="status-block"><div class="status-num">${((A.concluded / Math.max(A.concluded + A.cancelled, 1)) * 100).toFixed(0)}%</div><div class="status-lbl">Taxa de Conclusão</div></div>`;
+       
       }
 
       // ── RENDER CATALOG ────────────────────────────────────
